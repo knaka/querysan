@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.1
+	github.com/ikawaha/kagome v1.11.2
 	github.com/magefile/mage v1.12.1
 	github.com/mattn/go-sqlite3 v1.14.9
 )
