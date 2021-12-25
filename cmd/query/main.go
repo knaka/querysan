@@ -2,13 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/knaka/querysan/db"
-
-	"github.com/knaka/querysan"
 )
 
 func main() {
@@ -22,11 +19,6 @@ func main() {
 	subCommand := os.Args[1]
 	args := os.Args[2:]
 	switch subCommand {
-	case "serve":
-		err := querysan.Initialize()
-		if err != nil {
-			log.Fatal(err)
-		}
 	case "query":
 		fmt.Println("cp0")
 		// words := tokenizer.Words(args[0])

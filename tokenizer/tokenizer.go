@@ -1,4 +1,4 @@
-package querysan
+package tokenizer
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 	"github.com/ikawaha/kagome/tokenizer"
 )
 
-func words(s string) []string {
+func Words(s string) []string {
 	t := tokenizer.New()
 	// tokens := t.Tokenize(s)
 	tokens := t.Analyze(s, tokenizer.Search)

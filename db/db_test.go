@@ -1,4 +1,4 @@
-package querysan
+package db
 
 import (
 	"fmt"
@@ -13,13 +13,13 @@ func TestAddIndex(t *testing.T) {
 	if err := os.Remove(dbPath); err != nil {
 		t.Fail()
 	}
-	if err := InitializeDatabase(dbPath); err != nil {
+	if err := Initialize(dbPath); err != nil {
 		t.Fail()
 	}
-	if err := AddIndex("data/1.txt"); err != nil {
+	if err := UpsertEntry("data/1.txt"); err != nil {
 		t.Fail()
 	}
-	if err := AddIndex("data/2.txt"); err != nil {
+	if err := UpsertEntry("data/2.txt"); err != nil {
 		t.Fail()
 	}
 	paths, err := Query("適*")
@@ -27,10 +27,10 @@ func TestAddIndex(t *testing.T) {
 		t.Fail()
 	}
 	fmt.Println(paths)
-	if err := RemoveIndex("data/1.txt"); err != nil {
+	if err := DeleteEntry("data/1.txt"); err != nil {
 		t.Fail()
 	}
-	CloseDb()
+	Finalize()
 }
 
 func Test_fromExternalDateTime(t *testing.T) {
@@ -56,13 +56,13 @@ func Test_fromExternalDateTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := fromExternalDateTime(tt.args.datetime)
+			got, err := fromExternalTime(tt.args.datetime)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("fromExternalDateTime() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("fromExternalTime() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("fromExternalDateTime() got = %v, want %v", got, tt.want)
+				t.Errorf("fromExternalTime() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -87,8 +87,8 @@ func Test_toExternalDateTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := toExternalDateTime(tt.args.time1); got != tt.want {
-				t.Errorf("toExternalDateTime() = %v, want %v", got, tt.want)
+			if got := toExternalTime(tt.args.time1); got != tt.want {
+				t.Errorf("toExternalTime() = %v, want %v", got, tt.want)
 			}
 		})
 	}
