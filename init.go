@@ -1,17 +1,16 @@
 package querysan
 
 import (
-	"embed"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
-	iofsSource "github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -51,6 +50,8 @@ func startFileWatching() error {
 				log.Println("event:", event)
 				if event.Op&fsnotify.Create > 0 {
 					fileInfo, err := os.Stat(event.Name)
+					x := fileInfo.ModTime()
+					fmt.Println(x.UTC())
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -100,37 +101,6 @@ func startFileWatching() error {
 	return nil
 }
 
-//go:embed db/ddl/*.sql
-var fsDdl embed.FS
-
-func initializeDatabase(dbPath string) error {
-	if _, err := os.Stat(dbPath); err != nil {
-		file, err := os.Create(dbPath)
-		if err != nil {
-			return err
-		}
-		if err := file.Close(); err != nil {
-			return err
-		}
-	}
-	sourceDriver, err := iofsSource.New(fsDdl, "db/ddl")
-	if err != nil {
-		return err
-	}
-	databaseUrl := "sqlite3:" + dbPath
-	m, err := migrate.NewWithSourceInstance(
-		"iofs", sourceDriver,
-		databaseUrl,
-	)
-	if err != nil {
-		return err
-	}
-	if err := m.Up(); !(err == nil || err == migrate.ErrNoChange) {
-		return err
-	}
-	return nil
-}
-
 func Initialize() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -141,7 +111,7 @@ func Initialize() error {
 	if err = os.MkdirAll(dataDir, os.ModePerm); err != nil {
 		return err
 	}
-	err = initializeDatabase(dbPath)
+	err = InitializeDatabase(dbPath)
 	if err != nil {
 		return err
 	}
@@ -150,4 +120,9 @@ func Initialize() error {
 		return err
 	}
 	return nil
+}
+
+func timezone() (string, int) {
+	zone, offset := time.Now().Zone()
+	return zone, offset
 }
