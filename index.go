@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
@@ -51,6 +52,25 @@ func InitializeDatabase(dbPath string) error {
 	return nil
 }
 
+func GetIndexPathList() ([]string, error) {
+	var paths []string
+	rows, err := db.Query("SELECT path FROM fileinfo")
+	if err != nil {
+		return paths, err
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	for rows.Next() {
+		var path string
+		if err := rows.Scan(&path); err != nil {
+			return paths, err
+		}
+		paths = append(paths, path)
+	}
+	return paths, nil
+}
+
 func Query(query string) ([]string, error) {
 	var paths []string
 	rows, err := db.Query("SELECT path FROM fileinfo WHERE words MATCH ?", query)
@@ -72,7 +92,7 @@ func AddIndex(path string) error {
 	if err != nil {
 		return err
 	}
-	stmt, err := db.Prepare("INSERT INTO fileinfo(path, title, words) values(?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO fileinfo(path, title, words, updated_at) values(?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -82,11 +102,95 @@ func AddIndex(path string) error {
 		return err
 	}
 	words := words(string(content))
-	res, err := stmt.Exec(path, title, strings.Join(words, " "))
+	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return err
 	}
-	fmt.Println(res)
+	modTime := fileInfo.ModTime()
+	updatedAt := toExternalDateTime(&modTime)
+	_, err = stmt.Exec(path, title, strings.Join(words, " "), updatedAt)
+	if err != nil {
+		return err
+	}
+	log.Println("Added:", path)
+	return nil
+}
+
+const (
+	RFC3339Milli = "2006-01-02T15:04:05.999Z07:00"
+)
+
+func toExternalDateTime(time1 *time.Time) string {
+	return time1.UTC().Format(time.RFC3339Nano)
+}
+
+func fromExternalDateTime(datetime string) (*time.Time, error) {
+	if len(datetime) != 30 {
+		return nil, fmt.Errorf("not in rfc3339Nano format: %s", datetime)
+	}
+	utcTime, err := time.Parse(time.RFC3339Nano, datetime)
+	if err != nil {
+		return nil, err
+	}
+	time1 := utcTime.Local()
+	return &time1, nil
+}
+
+func RemoveIndex(path string) error {
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	stmt, err := db.Prepare("DELETE FROM fileinfo WHERE path = ?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(path)
+	if err != nil {
+		return err
+	}
+	log.Println("Removed:", path)
+	return nil
+}
+
+func UpdateIndex(path string) error {
+	if err := RemoveIndex(path); err != nil {
+		return err
+	}
+	if err := AddIndex(path); err != nil {
+		return err
+	}
+	return nil
+}
+
+func AddOrUpdateIndex(path string) error {
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	row := db.QueryRow("SELECT updated_at FROM fileinfo WHERE path = ?", path)
+	var updatedAtExternal string
+	if err != nil {
+		return err
+	}
+	if err = row.Scan(&updatedAtExternal); err != nil {
+		if err == sql.ErrNoRows {
+			return AddIndex(path)
+		}
+		return err
+	}
+	updatedAt, err := fromExternalDateTime(updatedAtExternal)
+	if err != nil {
+		return err
+	}
+	fileStat, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	modTime := fileStat.ModTime()
+	if modTime != *updatedAt && modTime.Before(*updatedAt) {
+		return UpdateIndex(path)
+	}
 	return nil
 }
 

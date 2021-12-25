@@ -1,7 +1,6 @@
 package querysan
 
 import (
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -19,6 +18,9 @@ func startFileWatching() error {
 	var dirsWatched []string
 	walkFunc := func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
+			if err := AddOrUpdateIndex(path); err != nil {
+				return err
+			}
 			return nil
 		}
 		dir := path
@@ -27,7 +29,7 @@ func startFileWatching() error {
 		if err != nil {
 			return err
 		}
-		log.Println("Added to watching list: ", dir)
+		log.Println("Added dir to watching list: ", dir)
 		return nil
 	}
 	if err != nil {
@@ -50,8 +52,6 @@ func startFileWatching() error {
 				log.Println("event:", event)
 				if event.Op&fsnotify.Create > 0 {
 					fileInfo, err := os.Stat(event.Name)
-					x := fileInfo.ModTime()
-					fmt.Println(x.UTC())
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -61,14 +61,16 @@ func startFileWatching() error {
 							log.Fatal(err)
 						}
 					} else {
-						// todo
-						log.Println("Should be added to index: ", event.Name)
+						if err := AddIndex(event.Name); err != nil {
+							log.Fatal(err)
+						}
 					}
 				} else if event.Op&fsnotify.Write > 0 {
-					// todo
-					log.Println("Should be updated: ", event.Name)
-				} else if event.Op&fsnotify.Remove > 0 {
-					log.Println("removed file or directory:", event.Name)
+					if err := UpdateIndex(event.Name); err != nil {
+						log.Fatal(err)
+					}
+				} else if event.Op&fsnotify.Remove > 0 || event.Op&fsnotify.Rename > 0 {
+					// todo: dir と file で場合分け
 					var dirsWatchedNew []string
 					for _, dir := range dirsWatched {
 						if strings.HasPrefix(dir, event.Name) {
@@ -81,8 +83,9 @@ func startFileWatching() error {
 						}
 					}
 					dirsWatched = dirsWatchedNew
-					// todo
-					log.Println("Should remove index under: ", event.Name)
+					if err := RemoveIndex(event.Name); err != nil {
+						log.Fatal(event.Name)
+					}
 				} else {
 				}
 			case err, ok := <-watcher.Errors:
@@ -93,9 +96,24 @@ func startFileWatching() error {
 			}
 		}
 	}()
-	log.Println("cp2 Adding dir")
-	if err := filepath.Walk("/Users/knaka/tmp", walkFunc); err != nil {
+	if err := filepath.Walk("/Users/knaka/tmp/test", walkFunc); err != nil {
 		return err
+	}
+	filePaths, err := GetIndexPathList()
+	if err != nil {
+		return err
+	}
+	for _, filePath := range filePaths {
+		_, err := os.Stat(filePath)
+		if os.IsNotExist(err) {
+			if err := RemoveIndex(filePath); err != nil {
+				return err
+			}
+			continue
+		}
+		if err != nil {
+			return err
+		}
 	}
 	<-done
 	return nil
