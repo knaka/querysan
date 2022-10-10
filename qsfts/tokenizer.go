@@ -12,7 +12,7 @@ func wordsJapanese(s string) []string {
 	// EOS: End Of Sentence
 	t, err := tokenizer.New(ipa.Dict(), tokenizer.OmitBosEos())
 	if err != nil {
-		log.Panicf("panic aafb7eb (%v)", err)
+		log.Panicf("panic 42afe51 (%v)", err)
 	}
 	// これは t.Analyze(s, tokenizer.Normal)
 	// tokens := t.Tokenize(s)

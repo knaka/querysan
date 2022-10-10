@@ -9,6 +9,7 @@ require (
 	github.com/ikawaha/kagome/v2 v2.8.2
 	github.com/mattn/go-sqlite3 v1.14.10
 	github.com/pelletier/go-toml/v2 v2.0.5
+	github.com/rjeczalik/notify v0.9.2
 	github.com/samber/lo v1.27.1
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4

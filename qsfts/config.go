@@ -32,14 +32,14 @@ func configFilePath() (string, error) {
 		if userConfigDir == "" {
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
-				return "", fmt.Errorf("error 698c60c (%w)", err)
+				return "", fmt.Errorf("error 714af37 (%w)", err)
 			}
 			userConfigDir = path.Join(homeDir, ".config")
 		}
 	default:
 		userConfigDir, err = os.UserConfigDir()
 		if err != nil {
-			return "", fmt.Errorf("error 09b3cbe (%w)", err)
+			return "", fmt.Errorf("error a12c224 (%w)", err)
 		}
 	}
 	return filepath.Join(userConfigDir, "querysan.toml"), nil
@@ -51,7 +51,7 @@ var defaultConfigToml []byte
 func EnsureConfigFile() error {
 	confFilePath, err := configFilePath()
 	if err != nil {
-		return fmt.Errorf("error c4fdc44 (%w)", err)
+		return fmt.Errorf("error 7f87f13 (%w)", err)
 	}
 	_, err = os.Stat(confFilePath)
 	if err == nil {
@@ -60,17 +60,17 @@ func EnsureConfigFile() error {
 	}
 	confDirPath := path.Dir(confFilePath)
 	if err = os.MkdirAll(confDirPath, 0755); err != nil {
-		return fmt.Errorf("error 243aa64 (%w)", err)
+		return fmt.Errorf("error 5c4c729 (%w)", err)
 	}
 	confFile, err := os.OpenFile(confFilePath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("error 778b59e (%w)", err)
+		return fmt.Errorf("error ff7a84d (%w)", err)
 	}
 	defer func() { _ = confFile.Close() }()
 	reader := bytes.NewReader(defaultConfigToml)
 	_, err = io.Copy(confFile, reader)
 	if err != nil {
-		return fmt.Errorf("error fe376dc (%w)", err)
+		return fmt.Errorf("error e102197 (%w)", err)
 	}
 	return nil
 }
@@ -84,24 +84,24 @@ func ReadConfig() (*Conf, error) {
 	configFilePath, err := configFilePath()
 	data, err := os.ReadFile(configFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("error ee00fa6 (%w)", err)
+		return nil, fmt.Errorf("error e8afdd7 (%w)", err)
 	}
 	config := &Conf{}
 	err = toml.Unmarshal(data, config)
 	if err != nil {
-		return nil, fmt.Errorf("error e64a370 (%w)", err)
+		return nil, fmt.Errorf("error 0453b04 (%w)", err)
 	}
 	homeVariableWithSeparator := fmt.Sprintf("%v%c", homeVariable, filepath.Separator)
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return nil, fmt.Errorf("error 1d4ccd3 (%w)", err)
+		return nil, fmt.Errorf("error ffbb128 (%w)", err)
 	}
 	for i, documentDirectory := range config.DocumentDirectories {
 		if strings.Index(documentDirectory.Path, homeVariableWithSeparator) == 0 {
 			p := strings.Replace(documentDirectory.Path, homeVariable, homeDir, 1)
 			p, err := filepath.EvalSymlinks(p)
 			if err != nil {
-				return nil, fmt.Errorf("error a0d42cf (%w)", err)
+				return nil, fmt.Errorf("error 063503d (%w)", err)
 			}
 			config.DocumentDirectories[i].Path = p
 		}

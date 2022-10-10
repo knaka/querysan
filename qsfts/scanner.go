@@ -25,11 +25,11 @@ func removeNotFoundEntries() error {
 			log.Println("Removing:", file.Path)
 			_, err := dbConn.Exec(`DELETE FROM file_texts WHERE rowid = ?`, file.TextID)
 			if err != nil {
-				return fmt.Errorf("error 3a6e0a9 (%w)", err)
+				return fmt.Errorf("error d883438 (%w)", err)
 			}
 			file.DeleteP(ctx, dbConn)
 		} else if err != nil {
-			return fmt.Errorf("error dce7500 (%w)", err)
+			return fmt.Errorf("error cc8fd1e (%w)", err)
 		}
 	}
 	return nil
@@ -63,7 +63,7 @@ func updateAFile(filePath string, force bool) error {
 		// 新規追加開始
 		log.Println("Caching:", filePath)
 	} else if err != nil {
-		return fmt.Errorf("error cd23abc (%w)", err)
+		return fmt.Errorf("error 040aecc (%w)", err)
 	} else {
 		if !force {
 			// 更新日時を確認し、更新されていなければ early return
@@ -72,7 +72,7 @@ func updateAFile(filePath string, force bool) error {
 			if os.IsNotExist(err) {
 				return nil
 			} else if err != nil {
-				return fmt.Errorf("error 291d978 (%w)", err)
+				return fmt.Errorf("error ab69be8 (%w)", err)
 			}
 			modTime := fileInfo.ModTime()
 			if modTime.Before(qsfile.UpdatedAt) {
@@ -85,14 +85,14 @@ func updateAFile(filePath string, force bool) error {
 	bytes, err := os.ReadFile(filePath)
 	log.Println("Size:", len(bytes))
 	if err != nil {
-		return fmt.Errorf("error 345c3a4 (%w)", err)
+		return fmt.Errorf("error 1609d65 (%w)", err)
 	}
 	text := divideJapaneseToWordsWithZwsp(string(bytes))
 	// todo タイトル抽出
 	title := ""
 	tx, err := dbConn.Begin()
 	if err != nil {
-		return fmt.Errorf("error c57cbde (%w)", err)
+		return fmt.Errorf("error 6317e0e (%w)", err)
 	}
 	defer func() {
 		err := recover()
@@ -108,19 +108,19 @@ func updateAFile(filePath string, force bool) error {
 		res, err = tx.Exec(`UPDATE file_texts SET title =?, body = ? WHERE rowid = ?`, title, text, qsfile.TextID)
 	}
 	if err != nil {
-		return fmt.Errorf("error 3c25d4c (%w)", err)
+		return fmt.Errorf("error 6e42a61 (%w)", err)
 	}
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error bb04c69 (%w)", err)
+		return fmt.Errorf("error 67c8107 (%w)", err)
 	}
 	if rowsAffected != 1 {
-		panic("panic 7909309")
+		panic("panic 0af62bf")
 	}
 	if qsfile.TextID == 0 {
 		textId, err := res.LastInsertId()
 		if err != nil {
-			return fmt.Errorf("error c1a95da (%w)", err)
+			return fmt.Errorf("error 9ab9ac5 (%w)", err)
 		}
 		qsfile.TextID = textId
 		qsfile.InsertP(ctx, tx, boil.Infer())
@@ -129,7 +129,7 @@ func updateAFile(filePath string, force bool) error {
 	}
 	err = tx.Commit()
 	if err != nil {
-		return fmt.Errorf("error 124da73 (%w)", err)
+		return fmt.Errorf("error 48d197e (%w)", err)
 	}
 	return nil
 }
@@ -145,11 +145,11 @@ func ScanFiles(dir string) error {
 	var err error
 	err = removeNotFoundEntries()
 	if err != nil {
-		return fmt.Errorf("error e6de913 (%w)", err)
+		return fmt.Errorf("error 9c64aba (%w)", err)
 	}
 	err = filepath.Walk(dir, walkToIndexFile)
 	if err != nil {
-		return fmt.Errorf("error 01326c0 (%w)", err)
+		return fmt.Errorf("error 71029c8 (%w)", err)
 	}
 	return nil
 }

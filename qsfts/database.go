@@ -13,7 +13,7 @@ var ctx context.Context
 func OpenDatabase() {
 	dbFilePath, err := DbFilePath()
 	if err != nil {
-		log.Panicf("panic 69cb4cb (%v)", err)
+		log.Panicf("panic 600b035 (%v)", err)
 	}
 	dbConn, _ = sql.Open("sqlite3", dbFilePath)
 	boil.SetDB(dbConn)

@@ -26,14 +26,14 @@ func DbFilePath() (string, error) {
 		if userCacheDir == "" {
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
-				return "", fmt.Errorf("error 698c60c (%w)", err)
+				return "", fmt.Errorf("error f84a4b6 (%w)", err)
 			}
 			userCacheDir = path.Join(homeDir, ".cache")
 		}
 	default:
 		userCacheDir, err = os.UserCacheDir()
 		if err != nil {
-			return "", fmt.Errorf("error 09b3cbe (%w)", err)
+			return "", fmt.Errorf("error 53bc03b (%w)", err)
 		}
 	}
 	return filepath.Join(userCacheDir, "querysan.sqlite3"), nil
@@ -54,35 +54,35 @@ func MigrateDatabase() {
 
 	// // migrate で create はしない？
 	// if err != nil {
-	// 	log.Panicf("panic 2219b9e (%v)", err)
+	// 	log.Panicf("panic fcb54f4 (%v)", err)
 	// }
 	// dbConn, err = sql.Open("sqlite3", dbFilePath)
 	// if err != nil {
-	// 	log.Panicf("panic b64af02 (%v)", err)
+	// 	log.Panicf("panic a997d0b (%v)", err)
 	// }
 	// err = dbConn.Close()
 	// if err != nil {
-	// 	log.Panicf("panic f9aa478 (%v)", err)
+	// 	log.Panicf("panic 6c98454 (%v)", err)
 	// }
 
 	if err != nil {
-		log.Panicf("panic 6e407a8 (%v)", err)
+		log.Panicf("panic 5d9385a (%v)", err)
 	}
 	sourceDriver, err := mig_drv_iofs.New(fsDdl, "ddl")
 	if err != nil {
-		log.Panicf("panic cf1a421 (%v)", err)
+		log.Panicf("panic 82595e9 (%v)", err)
 	}
 	databaseUrl := "sqlite3://" + dbFilePath
 	mig, err := migrate.NewWithSourceInstance("querysan migration", sourceDriver, databaseUrl)
 	if err != nil {
-		log.Panicf("panic af79d39 (%v)", err)
+		log.Panicf("panic fe581ef (%v)", err)
 	}
 	mig.Log = &logger{}
 	if err != nil {
-		log.Panicf("panic 92f1bd0 (%v)", err)
+		log.Panicf("panic 733bc43 (%v)", err)
 	}
 	defer func() { _, _ = mig.Close() }()
 	if err := mig.Up(); !(err == nil || err == migrate.ErrNoChange) {
-		log.Panicf("panic 63b0a55 (%v)", err)
+		log.Panicf("panic 416608d (%v)", err)
 	}
 }
