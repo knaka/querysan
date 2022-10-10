@@ -1,0 +1,12 @@
+{
+  "name": "querysan",
+  "outputfilename": "querysan",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Kiichiro Kyle NAKA",
+    "email": "knaka@ayutaya.com"
+  }
+}
