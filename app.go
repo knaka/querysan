@@ -1,9 +1,9 @@
 package main
 
 import (
-	"changeme/qsfts"
 	"context"
 	"fmt"
+	"github.com/knaka/querysan/qsfts"
 	"log"
 )
 
@@ -21,8 +21,8 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-
 	var err error
+	qsfts.MigrateDatabase()
 	err = qsfts.EnsureConfigFile()
 	if err != nil {
 		log.Panicf("panic 33f057b (%v)", err)
@@ -31,7 +31,16 @@ func (a *App) startup(ctx context.Context) {
 	if err != nil {
 		log.Panicf("panic c442d75 (%v)", err)
 	}
-	log.Println(conf)
+	qsfts.OpenDatabase()
+	go func() {
+		for _, documentDirectory := range conf.DocumentDirectories {
+			err := qsfts.ScanFiles(documentDirectory.Path)
+			if err != nil {
+				log.Panicf("panic 91ff196 (%v)", err)
+			}
+		}
+	}()
+
 }
 
 // Greet returns a greeting for the given name

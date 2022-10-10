@@ -1,0 +1,11 @@
+[sqlite3]
+dbname = "/Users/knaka/.cache/querysan.sqlite3"
+blacklist = [
+    "schema_migrations",
+    "file_texts",
+    "file_texts_content",
+    "file_texts_segments",
+    "file_texts_segdir",
+    "file_texts_docsize",
+    "file_texts_stat",
+]

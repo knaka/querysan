@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-type conf struct {
+type Conf struct {
 	DocumentDirectories []*confDocumentDirectory `toml:"document_directories"`
 }
 
@@ -77,13 +77,16 @@ func EnsureConfigFile() error {
 
 const homeVariable = "$HOME"
 
-func ReadConfig() (*conf, error) {
+// todo: service provider 式か、context に持たせるかする
+var conf *Conf
+
+func ReadConfig() (*Conf, error) {
 	configFilePath, err := configFilePath()
 	data, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("error ee00fa6 (%w)", err)
 	}
-	config := &conf{}
+	config := &Conf{}
 	err = toml.Unmarshal(data, config)
 	if err != nil {
 		return nil, fmt.Errorf("error e64a370 (%w)", err)
@@ -103,5 +106,6 @@ func ReadConfig() (*conf, error) {
 			config.DocumentDirectories[i].Path = p
 		}
 	}
+	conf = config
 	return config, nil
 }

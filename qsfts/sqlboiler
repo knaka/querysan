@@ -1,0 +1,5 @@
+#!/bin/bash
+set -o nounset -o errexit -o pipefail
+
+# db は symlink であり Dropbox で共有されていないので、sqlboiler の生成物はそちらへ入れる
+sqlboiler sqlite3 --config sqlboiler.toml --output models --pkgname models --add-global-variants --add-panic-variants --wipe --no-tests
