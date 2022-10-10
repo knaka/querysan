@@ -1,0 +1,7 @@
+[[document_directories]]
+path = "$HOME/doc"
+extensions = [".md", ".txt", ".tsv"]
+
+[[document_directories]]
+path = "$HOME/swh"
+extensions = [".md"]

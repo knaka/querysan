@@ -1,8 +1,10 @@
 package main
 
 import (
+	"changeme/qsfts"
 	"context"
 	"fmt"
+	"log"
 )
 
 // App struct
@@ -19,6 +21,17 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	var err error
+	err = qsfts.EnsureConfigFile()
+	if err != nil {
+		log.Panicf("panic 33f057b (%v)", err)
+	}
+	conf, err := qsfts.ReadConfig()
+	if err != nil {
+		log.Panicf("panic c442d75 (%v)", err)
+	}
+	log.Println(conf)
 }
 
 // Greet returns a greeting for the given name
