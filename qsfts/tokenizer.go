@@ -34,7 +34,16 @@ func divideJapaneseToWordsWithZwsp(text string) string {
 	return strings.Join(wordsJapanese(text), zwsp)
 }
 
+// todo: 初期呼び出しの、良い方法は？
+func init() {
+	divideJapaneseToWords("")
+}
+
 // クエリとして渡すにはスペースでも良いか
 func divideJapaneseToWords(text string) string {
 	return strings.Join(wordsJapanese(text), " ")
+}
+
+func removeZwsp(s string) string {
+	return strings.ReplaceAll(s, zwsp, "")
 }

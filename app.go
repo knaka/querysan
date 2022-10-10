@@ -47,3 +47,26 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
+
+type QueryResult struct {
+	Path    string `json:"path"`
+	Title   string `json:"title"`
+	Offsets string `json:"offsets"`
+	Snippet string `json:"snippet"`
+}
+
+func (a *App) Query(query string) []*qsfts.QueryResult {
+	// var ret []*QueryResult = nil
+	// results := qsfts.Query(query)
+	// for _, result := range results {
+	// 	x := &QueryResult{
+	// 		Path:    result.Path,
+	// 		Title:   result.Title,
+	// 		Offsets: result.Offsets,
+	// 		Snippet: result.Snippet,
+	// 	}
+	// 	ret = append(ret, x)
+	// }
+	// return ret
+	return qsfts.Query(query)
+}

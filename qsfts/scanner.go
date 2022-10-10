@@ -7,6 +7,7 @@ import (
 	"github.com/knaka/querysan/qsfts/models"
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 	"io/fs"
 	"log"
 	"os"
@@ -151,4 +152,27 @@ func ScanFiles(dir string) error {
 		return fmt.Errorf("error 01326c0 (%w)", err)
 	}
 	return nil
+}
+
+type QueryResult struct {
+	Path    string `boil:"path" json:"path"`
+	Title   string `boil:"title" json:"title"`
+	Offsets string `boil:"offsets" json:"offsets"`
+	Snippet string `boil:"snippet" json:"snippet"`
+}
+
+func Query(query string) []*QueryResult {
+	query = strings.TrimSpace(query)
+	queryDivided := divideJapaneseToWords(query)
+	var resultSlice []*QueryResult
+	// noinspection SqlResolve
+	queries.Raw(`
+SELECT path, title, offsets(file_texts) AS offsets, snippet(file_texts) AS snippet
+FROM file_texts INNER JOIN files ON file_texts.docid = files.text_id
+WHERE file_texts MATCH ?
+ORDER BY path`, queryDivided).BindP(ctx, dbConn, &resultSlice)
+	if len(resultSlice) == 0 {
+		return nil
+	}
+	return resultSlice
 }
