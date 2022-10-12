@@ -91,10 +91,14 @@
   }
 
   #itemC {
+    margin: 1ex;
     grid-column: 2 / 3;
     grid-row: 1 / 2;
   }
 
+  pre {
+    white-space: pre-wrap ;
+  }
 </style>
 
 <div id="wrapper">
@@ -112,5 +116,9 @@
       </select>
     </div>
   </div>
-  <div id="itemC"><pre>{@html body}</pre></div>
+  <div id="itemC">
+    <p>{@html snippet}</p>
+    <hr>
+    <pre>{@html body}</pre>
+  </div>
 </div>
