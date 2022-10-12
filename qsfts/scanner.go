@@ -154,6 +154,27 @@ func ScanFiles(dir string) error {
 	return nil
 }
 
+type BodyResult struct {
+	Body string `boil:"body" json:"body"`
+}
+
+func Body(path string) []*BodyResult {
+	var results []*BodyResult
+	// noinspection SqlResolve
+	err := queries.Raw(`
+SELECT body
+FROM file_texts INNER JOIN files ON file_texts.docid = files.text_id
+WHERE files.path = ?
+LIMIT 1`, path).Bind(ctx, dbConn, &results)
+	if err != nil {
+		log.Panicf("panic cd4d3db (%v)", err)
+	}
+	if len(results) == 0 {
+		return nil
+	}
+	return results
+}
+
 type QueryResult struct {
 	Path    string `boil:"path" json:"path"`
 	Title   string `boil:"title" json:"title"`
@@ -170,7 +191,7 @@ func Query(query string) []*QueryResult {
 SELECT path, title, offsets(file_texts) AS offsets, snippet(file_texts) AS snippet
 FROM file_texts INNER JOIN files ON file_texts.docid = files.text_id
 WHERE file_texts MATCH ?
-ORDER BY path
+ORDER BY length(offsets) DESC
 LIMIT 20`, queryDivided).Bind(ctx, dbConn, &resultSlice)
 	// 何かしくじる？
 	if err != nil {

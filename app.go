@@ -62,14 +62,14 @@ type QueryResult struct {
 	Snippet string `json:"snippet"`
 }
 
-func (a *App) Query(query string) []*QueryResult {
-	arr := []*QueryResult{}
+func (a *App) Query(query string) []map[string]string {
+	arr := []map[string]string{}
 	for _, result := range qsfts.Query(query) {
-		arr = append(arr, &QueryResult{
-			Path:    result.Path,
-			Title:   result.Title,
-			Offsets: result.Offsets,
-			Snippet: result.Snippet,
+		arr = append(arr, map[string]string{
+			"path":    result.Path,
+			"title":   result.Title,
+			"offsets": result.Offsets,
+			"snippet": result.Snippet,
 		})
 	}
 	log.Println("query:", query)
@@ -82,4 +82,12 @@ func (a *App) Open(path string) {
 	if err != nil {
 		log.Panicf("panic 82834bf (%v)", err)
 	}
+}
+
+func (a *App) Body(path string) string {
+	ret := qsfts.Body(path)
+	if len(ret) == 0 {
+		return ""
+	}
+	return ret[0].Body
 }

@@ -1,81 +1,101 @@
 <script lang="ts">
-  // class QueryResult {
-  //   path: string;
-  //   title: string;
-  //   offsets: string;
-  //   snippet: string;
-  //
-  //   static createFrom(source: any = {}) {
-  //     return new QueryResult(source);
-  //   }
-  //
-  //   constructor(source: any = {}) {
-  //     if ('string' === typeof source) source = JSON.parse(source);
-  //     this.path = source["path"];
-  //     this.title = source["title"];
-  //     this.offsets = source["offsets"];
-  //     this.snippet = source["snippet"];
-  //   }
-  // }
-  //
-  import {Open, Query} from '../wailsjs/go/main/App'
-  // import {main} from "../wailsjs/go/models";
-  // import QueryResult = main.QueryResult;
+  import {Body, Open, Query} from '../wailsjs/go/main/App'
 
-  let input_area: string = ""
-  let input_value: string = ""
+  let input_text: string = ""
+  let query: string = ""
+  // 日本語入力を伴うと、text input へ bind された変数へ
+  // 入ってくる文字列の内容が危ういので、都度コピーしてみたら
+  // うまく行った。なぜかは分からない
+  $: query = input_text
 
-  let results = []
-  let selected = ""
+  let query_results = []
+  let selected_path = ""
   let snippet = ""
+  let body = ""
 
   function keydown(e) {
-    if (e.key !== "Enter") {
-      return
-    }
-    Open(selected)
+    if (e.key !== "Enter") { return }
+    Open(selected_path)
   }
 
-  $: input_value = input_area
+  function double_click(e) {
+    Open(e.target.value)
+  }
+
   $: (async () => {
-    results = await Query(input_value)
-    selected = ""
-    snippet = ""
+    query_results = await Query(query)
+    // if (query_results.length > 0) {
+    //   selected_path = query_results[0]["path"]
+    // } else {
+      selected_path = ""
+      snippet = ""
+      body = ""
+    // }
   })()
-  $: {
-    console.log(results.length)
-    console.log(selected)
-    if (results.length > 0 && selected != "") {
-      snippet = results.find(e => e.path == selected).snippet
-    }
+
+  $: (async () => {
+    body = await Body(selected_path)
+  })()
+
+  $: if (query_results.length > 0 && selected_path != "") {
+    snippet = query_results.find(e => e["path"] == selected_path)["snippet"]
   }
 </script>
 
-<p>hello</p>
+<style>
+  #wrapper {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 100%;
+  }
 
-<p>input_value: {input_value}</p>
+  #left_pane {
+    margin: 0;
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
 
-<!--<p>length: {length}</p>-->
+  #query_pane {
+    margin: 0;
+  }
 
-<ul>
-  <!--{#each results as result}-->
-  <!--  <li>{result.path}></li>-->
-  <!--{/each}-->
-</ul>
+  #selection_pane {
+    margin: 0;
+  }
 
-<div id="container">
-  <div id="itemA">
-    Query: <input type="text" bind:value={input_area} spellcheck="false" autofocus>
+  #selection_pane select {
+    height: 100%;
+  }
+
+  #selection {
+    width: 100%;
+    height: 100%;
+  }
+
+  #itemC {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+
+</style>
+
+<div id="wrapper">
+  <div id="left_pane">
+    <div id="query_pane">
+      <!-- Get rid of "A11y: Avoid using autofocus" warning · Issue #6629 · sveltejs/svelte https://github.com/sveltejs/svelte/issues/6629 -->
+      <!-- svelte-ignore a11y-autofocus -->
+      Query: <input type="text" bind:value={input_text} spellcheck="false" id="text_input" autofocus>
+    </div>
+    <div id="selection_pane">
+      <select size=30 id=selection bind:value={selected_path} on:keydown={keydown} on:dblclick={double_click}>
+        {#each query_results as result}
+          <option value={result["path"]}>{result["path"]}</option>
+        {/each}
+      </select>
+    </div>
   </div>
-  <div id="itemB">
-    <select size="20" bind:value={selected} on:keydown={keydown}>
-      {#each results as result}
-        <option value={result.path}>{result.path}</option>
-      {/each}
-    </select>
-  </div>
-  <div id="itemC">
-    <p>selected: {selected}</p>
-    <p>snippet: {@html snippet}</p>
-  </div>
+  <div id="itemC"><pre>{@html body}</pre></div>
 </div>
