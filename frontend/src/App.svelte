@@ -1,83 +1,81 @@
 <script lang="ts">
-  import logo from './assets/images/logo-universal.png'
-  import {Query} from '../wailsjs/go/main/App.js'
-
-  let resultText: string = "Please enter your name below 👇👇👇"
-  let name: string
-
-  // function greet(): void {
-  //   Greet(name).then(result => resultText = result)
+  // class QueryResult {
+  //   path: string;
+  //   title: string;
+  //   offsets: string;
+  //   snippet: string;
+  //
+  //   static createFrom(source: any = {}) {
+  //     return new QueryResult(source);
+  //   }
+  //
+  //   constructor(source: any = {}) {
+  //     if ('string' === typeof source) source = JSON.parse(source);
+  //     this.path = source["path"];
+  //     this.title = source["title"];
+  //     this.offsets = source["offsets"];
+  //     this.snippet = source["snippet"];
+  //   }
   // }
+  //
+  import {Open, Query} from '../wailsjs/go/main/App'
+  // import {main} from "../wailsjs/go/models";
+  // import QueryResult = main.QueryResult;
 
-  function query(): void {
-    Query(name).then(result => resultText = result[0].path)
+  let input_area: string = ""
+  let input_value: string = ""
+
+  let results = []
+  let selected = ""
+  let snippet = ""
+
+  function keydown(e) {
+    if (e.key !== "Enter") {
+      return
+    }
+    Open(selected)
+  }
+
+  $: input_value = input_area
+  $: (async () => {
+    results = await Query(input_value)
+    selected = ""
+    snippet = ""
+  })()
+  $: {
+    console.log(results.length)
+    console.log(selected)
+    if (results.length > 0 && selected != "") {
+      snippet = results.find(e => e.path == selected).snippet
+    }
   }
 </script>
 
-<main>
-  <img alt="Wails logo" id="logo" src="{logo}">
-  <div class="result" id="result">{resultText}</div>
-  <div class="input-box" id="input">
-    <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
-    <button class="btn" on:click={query}>Query</button>
+<p>hello</p>
+
+<p>input_value: {input_value}</p>
+
+<!--<p>length: {length}</p>-->
+
+<ul>
+  <!--{#each results as result}-->
+  <!--  <li>{result.path}></li>-->
+  <!--{/each}-->
+</ul>
+
+<div id="container">
+  <div id="itemA">
+    Query: <input type="text" bind:value={input_area} spellcheck="false" autofocus>
   </div>
-</main>
-
-<style>
-
-  #logo {
-    display: block;
-    width: 50%;
-    height: 50%;
-    margin: auto;
-    padding: 10% 0 0;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    background-origin: content-box;
-  }
-
-  .result {
-    height: 20px;
-    line-height: 20px;
-    margin: 1.5rem auto;
-  }
-
-  .input-box .btn {
-    width: 60px;
-    height: 30px;
-    line-height: 30px;
-    border-radius: 3px;
-    border: none;
-    margin: 0 0 0 20px;
-    padding: 0 8px;
-    cursor: pointer;
-  }
-
-  .input-box .btn:hover {
-    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-    color: #333333;
-  }
-
-  .input-box .input {
-    border: none;
-    border-radius: 3px;
-    outline: none;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 10px;
-    background-color: rgba(240, 240, 240, 1);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .input-box .input:hover {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
-  }
-
-  .input-box .input:focus {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
-  }
-
-</style>
+  <div id="itemB">
+    <select size="20" bind:value={selected} on:keydown={keydown}>
+      {#each results as result}
+        <option value={result.path}>{result.path}</option>
+      {/each}
+    </select>
+  </div>
+  <div id="itemC">
+    <p>selected: {selected}</p>
+    <p>snippet: {@html snippet}</p>
+  </div>
+</div>

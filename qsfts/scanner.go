@@ -166,11 +166,16 @@ func Query(query string) []*QueryResult {
 	queryDivided := divideJapaneseToWords(query)
 	var resultSlice []*QueryResult
 	// noinspection SqlResolve
-	queries.Raw(`
+	err := queries.Raw(`
 SELECT path, title, offsets(file_texts) AS offsets, snippet(file_texts) AS snippet
 FROM file_texts INNER JOIN files ON file_texts.docid = files.text_id
 WHERE file_texts MATCH ?
-ORDER BY path`, queryDivided).BindP(ctx, dbConn, &resultSlice)
+ORDER BY path
+LIMIT 20`, queryDivided).Bind(ctx, dbConn, &resultSlice)
+	// 何かしくじる？
+	if err != nil {
+		return nil
+	}
 	if len(resultSlice) == 0 {
 		return nil
 	}

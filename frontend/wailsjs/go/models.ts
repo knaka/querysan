@@ -1,4 +1,4 @@
-export namespace qsfts {
+export namespace main {
 	
 	export class QueryResult {
 	    path: string;

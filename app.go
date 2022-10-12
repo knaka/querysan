@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/knaka/querysan/qsfts"
 	"log"
+	"os/exec"
 )
 
 // App struct
@@ -53,6 +54,32 @@ func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
-func (a *App) Query(query string) []*qsfts.QueryResult {
-	return qsfts.Query(query)
+// QueryResult は、どうも main 以外の package から読み込むと
+type QueryResult struct {
+	Path    string `json:"path"`
+	Title   string `json:"title"`
+	Offsets string `json:"offsets"`
+	Snippet string `json:"snippet"`
+}
+
+func (a *App) Query(query string) []*QueryResult {
+	arr := []*QueryResult{}
+	for _, result := range qsfts.Query(query) {
+		arr = append(arr, &QueryResult{
+			Path:    result.Path,
+			Title:   result.Title,
+			Offsets: result.Offsets,
+			Snippet: result.Snippet,
+		})
+	}
+	log.Println("query:", query)
+	return arr
+}
+
+func (a *App) Open(path string) {
+	cmd := exec.Command("open", path)
+	err := cmd.Run()
+	if err != nil {
+		log.Panicf("panic 82834bf (%v)", err)
+	}
 }
