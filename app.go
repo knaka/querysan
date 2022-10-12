@@ -6,6 +6,7 @@ import (
 	"github.com/knaka/querysan/qsfts"
 	"log"
 	"os/exec"
+	"sync"
 )
 
 // App struct
@@ -62,7 +63,24 @@ type QueryResult struct {
 	Snippet string `json:"snippet"`
 }
 
-func (a *App) Query(query string) []map[string]string {
+var lastSeq int = 0
+
+var mu sync.Mutex
+
+func (a *App) Query(query string, seq int) map[string]any {
+	mu.Lock()
+	defer mu.Unlock()
+	log.Println("query:", query, seq, lastSeq)
+	if seq < 0 {
+		lastSeq = 0
+	} else if seq <= lastSeq {
+		log.Println("error query:", query, seq)
+		return map[string]any{
+			"error": true,
+		}
+	} else {
+		lastSeq = seq
+	}
 	arr := []map[string]string{}
 	for _, result := range qsfts.Query(query) {
 		arr = append(arr, map[string]string{
@@ -72,8 +90,12 @@ func (a *App) Query(query string) []map[string]string {
 			"snippet": result.Snippet,
 		})
 	}
-	log.Println("query:", query)
-	return arr
+	log.Println("ok query:", query, lastSeq)
+	return map[string]any{
+		"seq":     lastSeq,
+		"error":   false,
+		"results": arr,
+	}
 }
 
 func (a *App) Open(path string) {

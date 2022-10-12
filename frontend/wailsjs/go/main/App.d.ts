@@ -7,4 +7,4 @@ export function Greet(arg1:string):Promise<string>;
 
 export function Open(arg1:string):Promise<void>;
 
-export function Query(arg1:string):Promise<Array<{[key: string]: string}>>;
+export function Query(arg1:string,arg2:number):Promise<{[key: string]: any}>;

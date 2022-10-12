@@ -12,6 +12,7 @@
   let selected_path = ""
   let snippet = ""
   let body = ""
+  let seq = -1
 
   function keydown(e) {
     if (e.key !== "Enter") { return }
@@ -22,14 +23,28 @@
     Open(e.target.value)
   }
 
+  function input_keydown(e) {
+    if (e.isComposing) {
+      return
+    }
+    console.log(e)
+    query = e.target.value
+    // input_text
+  }
+
   $: (async () => {
-    query_results = await Query(query)
+    console.log("query:", query, seq)
+    let result_new = await Query(query, seq ++)
+    if (result_new["error"]) {
+      return
+    }
+    query_results = result_new["results"]
     // if (query_results.length > 0) {
     //   selected_path = query_results[0]["path"]
     // } else {
-      selected_path = ""
-      snippet = ""
-      body = ""
+    selected_path = ""
+    snippet = ""
+    body = ""
     // }
   })()
 
@@ -87,7 +102,7 @@
     <div id="query_pane">
       <!-- Get rid of "A11y: Avoid using autofocus" warning · Issue #6629 · sveltejs/svelte https://github.com/sveltejs/svelte/issues/6629 -->
       <!-- svelte-ignore a11y-autofocus -->
-      Query: <input type="text" bind:value={input_text} spellcheck="false" id="text_input" autofocus>
+      Query: <input type="text" spellcheck="false" id="text_input" autofocus on:keydown={input_keydown}>
     </div>
     <div id="selection_pane">
       <select size=30 id=selection bind:value={selected_path} on:keydown={keydown} on:dblclick={double_click}>

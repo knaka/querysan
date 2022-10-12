@@ -14,6 +14,6 @@ export function Open(arg1) {
   return window['go']['main']['App']['Open'](arg1);
 }
 
-export function Query(arg1) {
-  return window['go']['main']['App']['Query'](arg1);
+export function Query(arg1, arg2) {
+  return window['go']['main']['App']['Query'](arg1, arg2);
 }
